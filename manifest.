@@ -1,0 +1,57 @@
+// Add this file as `public/manifest.json`
+{
+  "name": "Snake Game",
+  "short_name": "Snake",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#2f3640",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
+// Add a service worker file as `public/sw.js`
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open('snake-cache-v1').then((cache) => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/sounds/eat.mp3',
+        '/sounds/gameover.mp3',
+        '/sounds/background.mp3',
+      ]);
+    })
+  );
+});
+
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    caches.match(e.request).then((response) => {
+      return response || fetch(e.request);
+    })
+  );
+});
+
+// In your main _app.tsx or index.html, link the manifest and register the service worker
+// index.html head tag additions:
+{/* <link rel="manifest" href="/manifest.json" /> */}
+{/* <meta name="theme-color" content="#2f3640" /> */}
+
+// Service Worker Registration in useEffect (e.g. _app.tsx or index.tsx)
+useEffect(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(console.error);
+  }
+}, []);
